@@ -1,0 +1,17 @@
+# Secrets — NEVER commit
+.env
+*.env
+!.env.example
+
+# GCP credentials
+gcp-credentials.json
+*-credentials.json
+
+# SSH keys
+id_rsa
+id_deploy
+*.pem
+
+# OS junk
+.DS_Store
+Thumbs.db

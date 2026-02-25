@@ -1,0 +1,171 @@
+{
+    "env": {
+        "shellEnv": {
+            "enabled": false
+        },
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}",
+        "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
+    },
+    "tools": {
+        "web": {
+            "search": {
+                "apiKey": "${BRAVE_API_KEY}"
+            }
+        },
+        "deny": [
+            "group:nodes"
+        ],
+        "fs": {
+            "workspaceOnly": true
+        },
+        "elevated": {
+            "enabled": false
+        }
+    },
+    "auth": {
+        "profiles": {
+            "google-antigravity:your-email@gmail.com": {
+                "provider": "google-antigravity",
+                "mode": "oauth",
+                "email": "your-email@gmail.com"
+            }
+        },
+        "cooldowns": {
+            "billingBackoffHours": 5
+        }
+    },
+    "agents": {
+        "defaults": {
+            "timeoutSeconds": 240,
+            "model": {
+                "primary": "google-antigravity/gemini-3-flash"
+            },
+            "models": {
+                "google-antigravity/gemini-3-flash": {}
+            },
+            "workspace": "${HOME}/.openclaw/workspace",
+            "compaction": {
+                "mode": "safeguard"
+            },
+            "subagents": {
+                "maxConcurrent": 1
+            },
+            "sandbox": {
+                "mode": "off"
+            }
+        },
+        "list": [
+            {
+                "id": "main",
+                "model": {
+                    "primary": "google-antigravity/gemini-3-flash"
+                },
+                "sandbox": {
+                    "mode": "off"
+                }
+            },
+            {
+                "id": "reader",
+                "model": {
+                    "primary": "google-antigravity/gemini-3-flash"
+                },
+                "tools": {
+                    "profile": "full",
+                    "deny": [
+                        "write",
+                        "edit",
+                        "apply_patch",
+                        "browser",
+                        "cron",
+                        "gateway",
+                        "group:nodes",
+                        "process",
+                        "exec",
+                        "shell_exec",
+                        "bash",
+                        "zsh",
+                        "sh"
+                    ]
+                },
+                "sandbox": {
+                    "mode": "off"
+                }
+            }
+        ]
+    },
+    "messages": {
+        "ackReactionScope": "group-mentions"
+    },
+    "commands": {
+        "native": "auto",
+        "nativeSkills": "auto"
+    },
+    "channels": {
+        "whatsapp": {
+            "dmPolicy": "allowlist",
+            "selfChatMode": true,
+            "allowFrom": [],
+            "groupPolicy": "allowlist",
+            "mediaMaxMb": 50,
+            "ackReaction": {
+                "direct": true,
+                "group": "mentions"
+            },
+            "debounceMs": 0
+        }
+    },
+    "talk": {
+        "apiKey": "${OPENAI_API_KEY}"
+    },
+    "gateway": {
+        "port": 18789,
+        "mode": "local",
+        "bind": "loopback",
+        "controlUi": {
+            "allowInsecureAuth": true
+        },
+        "auth": {
+            "allowTailscale": true,
+            "mode": "token",
+            "token": "${OPENCLAW_GATEWAY_TOKEN}"
+        },
+        "tailscale": {
+            "mode": "serve",
+            "resetOnExit": false
+        },
+        "trustedProxies": [
+            "127.0.0.1"
+        ]
+    },
+    "skills": {
+        "install": {
+            "nodeManager": "npm"
+        }
+    },
+    "plugins": {
+        "entries": {
+            "google-antigravity-auth": {
+                "enabled": true
+            },
+            "whatsapp": {
+                "enabled": true
+            }
+        }
+    },
+    "hooks": {
+        "internal": {
+            "enabled": true,
+            "entries": {
+                "session-memory": {
+                    "enabled": true
+                },
+                "boot-md": {
+                    "enabled": true
+                },
+                "command-logger": {
+                    "enabled": true
+                }
+            }
+        }
+    }
+}

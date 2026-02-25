@@ -1,0 +1,63 @@
+name: Deploy to Hetzner
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag (default: latest)'
+        required: false
+        default: 'latest'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.HETZNER_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H ${{ secrets.HETZNER_VPS_IP }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Transfer deployment bundle
+        run: |
+          scp -i ~/.ssh/id_deploy -r deploy/hetzner \
+            root@${{ secrets.HETZNER_VPS_IP }}:~/openclaw-deploy
+
+      - name: Push secrets
+        run: |
+          ssh -i ~/.ssh/id_deploy root@${{ secrets.HETZNER_VPS_IP }} \
+            "mkdir -p /mnt/kb/runtime/secrets && chown 1000:1000 /mnt/kb/runtime/secrets"
+          if [ -n "$GCP_CREDS" ]; then
+            echo "$GCP_CREDS" | ssh -i ~/.ssh/id_deploy root@${{ secrets.HETZNER_VPS_IP }} \
+              "cat > /mnt/kb/runtime/secrets/gcp-credentials.json && chmod 600 /mnt/kb/runtime/secrets/gcp-credentials.json && chown 1000:1000 /mnt/kb/runtime/secrets/gcp-credentials.json"
+          fi
+        env:
+          GCP_CREDS: ${{ secrets.GCP_CREDENTIALS_JSON }}
+
+      - name: Push deploy key for workspace sync
+        if: ${{ secrets.DEPLOY_KEY != '' }}
+        run: |
+          if [ -n "$DEPLOY_KEY" ]; then
+            echo "$DEPLOY_KEY" | ssh -i ~/.ssh/id_deploy root@${{ secrets.HETZNER_VPS_IP }} \
+              "mkdir -p /root/.ssh && cat > /root/.ssh/deploy_key && chmod 600 /root/.ssh/deploy_key"
+          fi
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Run setup
+        run: |
+          ssh -i ~/.ssh/id_deploy root@${{ secrets.HETZNER_VPS_IP }} \
+            "cd ~/openclaw-deploy && GITHUB_REPO='${{ secrets.GITHUB_REPO }}' bash setup.sh"
+
+      - name: Verify deployment
+        run: |
+          ssh -i ~/.ssh/id_deploy root@${{ secrets.HETZNER_VPS_IP }} \
+            "docker compose -f ~/openclaw-deploy/docker-compose.yml ps && systemctl status mitmproxy --no-pager"
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_deploy

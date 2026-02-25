@@ -1,0 +1,50 @@
+services:
+  openclaw-gateway:
+    image: ${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:latest}
+    container_name: openclaw-gateway
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env
+      - /mnt/kb/runtime/secrets/secrets.env
+    environment:
+      - HOME=/home/node
+      - NODE_ENV=production
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TERM=xterm-256color
+      # Gateway binds to lan (host interface) with network_mode: host
+      - OPENCLAW_GATEWAY_BIND=lan
+      - OPENCLAW_GATEWAY_PORT=${OPENCLAW_GATEWAY_PORT:-18789}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - GOG_KEYRING_PASSWORD=${GOG_KEYRING_PASSWORD}
+      - XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-/home/node/.openclaw}
+      # Proxy Config (mitmproxy runs on host via systemd, same network via host mode)
+      - HTTP_PROXY=http://127.0.0.1:8080
+      - HTTPS_PROXY=http://127.0.0.1:8080
+      - NODE_EXTRA_CA_CERTS=/home/node/.openclaw/.mitmproxy/mitmproxy-ca-cert.pem
+      - SSL_CERT_FILE=/home/node/.openclaw/.mitmproxy/mitmproxy-ca-cert.pem
+      # Required for Puppeteer/Chrome
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+    volumes:
+      # Block Storage Mount (Source of Truth) -> Container Config Source
+      - /mnt/kb/runtime:/openclaw-config-source:rw
+      # Mount CA cert directory from host mitmproxy
+      - /mnt/kb/runtime/proxy/.mitmproxy:/home/node/.openclaw/.mitmproxy:ro
+      # Runtime Config
+      - /mnt/kb/runtime:/home/node/.openclaw:rw
+      - /mnt/kb/user_knowledge_base:/home/node/.openclaw/workspace/knowledge_base:rw
+      - /mnt/kb/agents:/home/node/.openclaw/agents:rw
+      - /mnt/kb/skills:/home/node/.openclaw/skills:rw
+      - /usr/local/bin/gog:/usr/local/bin/gog:ro
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock:ro
+    tmpfs:
+      - /tmp:rw
+    # No ports needed with network_mode: host
+    user: "1000:988"
+    cap_add: [CHOWN, SETGID, SETUID, SYS_CHROOT]
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:unconfined
+    shm_size: '2gb'

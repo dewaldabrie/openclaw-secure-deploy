@@ -1,0 +1,23 @@
+[Unit]
+Description=mitmproxy for OpenClaw (host-level regular proxy)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/mitmweb \
+    --listen-host 127.0.0.1 --listen-port 8080 \
+    --web-host 127.0.0.1 --web-port 8081 \
+    --set block_global=false \
+    --set web_password=openclaw \
+    --no-web-open-browser \
+    --showhost \
+    -s /mnt/kb/runtime/proxy/filter.py
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+User=root
+Environment=HOME=/mnt/kb/runtime/proxy
+WorkingDirectory=/mnt/kb/runtime/proxy
+
+[Install]
+WantedBy=multi-user.target

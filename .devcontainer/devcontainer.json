@@ -1,0 +1,18 @@
+{
+    "name": "OpenClaw Hetzner Management",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.makefile-tools"
+            ]
+        }
+    },
+    "postCreateCommand": "echo 'Ready! Run: cd deploy/hetzner && make help'",
+    "remoteEnv": {
+        "VPS_IP": "${localEnv:VPS_IP}"
+    }
+}

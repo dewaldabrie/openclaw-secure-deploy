@@ -1,0 +1,18 @@
+domain,comment
+api.whatsapp.com,WhatsApp API
+web.whatsapp.com,WhatsApp Web
+g.co,Google shortlinks
+googleapis.com,Google APIs
+accounts.google.com,Google OAuth
+oauth2.googleapis.com,Google OAuth2
+www.googleapis.com,Google APIs
+gmail.googleapis.com,Gmail API
+github.com,GitHub
+ghcr.io,GitHub Container Registry
+openai.com,OpenAI
+openrouter.ai,OpenRouter
+anthropic.com,Anthropic
+tailscale.com,Tailscale
+login.tailscale.com,Tailscale Login
+trello.com,Trello
+api.trello.com,Trello API
