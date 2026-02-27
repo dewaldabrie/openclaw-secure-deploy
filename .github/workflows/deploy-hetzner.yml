@@ -11,6 +11,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: dewald-hetzner-prod
+    if: github.repository != 'dewaldabrie/openclaw-secure-deploy'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,7 +53,7 @@ jobs:
       - name: Run setup
         run: |
           ssh -i ~/.ssh/id_deploy root@${{ secrets.HETZNER_VPS_IP }} \
-            "cd ~/openclaw-deploy && GITHUB_REPO='${{ secrets.GITHUB_REPO }}' bash setup.sh"
+            "cd ~/openclaw-deploy && GITHUB_REPO='${{ secrets.SYNC_REPO }}' bash setup.sh"
 
       - name: Verify deployment
         run: |
