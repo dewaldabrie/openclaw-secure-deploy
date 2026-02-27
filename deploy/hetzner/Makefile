@@ -88,6 +88,11 @@ pair-whatsapp: ## Pair WhatsApp (interactive — scan QR code)
 	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
 		"docker exec -it openclaw-gateway npm exec -- openclaw channels login --channel whatsapp --verbose"
 
+.PHONY: logout-whatsapp
+logout-whatsapp: ## Logout of WhatsApp and clear session
+	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
+		"docker exec -it openclaw-gateway npm exec -- openclaw channels logout --channel whatsapp"
+
 .PHONY: pair-telegram
 pair-telegram: ## Pair Telegram bot
 	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
