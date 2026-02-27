@@ -144,6 +144,15 @@ fi
 systemctl daemon-reload
 systemctl enable mitmproxy
 
+# 3.7 Setup Chromium Wrapper for Puppeteer to accept mitmproxy cert
+echo "🌐 Setting up Chromium wrapper for Puppeteer..."
+cat > "$MOUNT_POINT/runtime/proxy/chromium-wrapper.sh" <<'WRAPPER'
+#!/bin/bash
+exec /usr/bin/chromium --proxy-server="http://127.0.0.1:8080" --ignore-certificate-errors "$@"
+WRAPPER
+chown 1000:1000 "$MOUNT_POINT/runtime/proxy/chromium-wrapper.sh"
+chmod +x "$MOUNT_POINT/runtime/proxy/chromium-wrapper.sh"
+
 # Start mitmproxy to generate CA certs if they don't exist yet
 CERT_PATH="$MOUNT_POINT/runtime/proxy/.mitmproxy/mitmproxy-ca-cert.pem"
 if [ ! -f "$CERT_PATH" ]; then
@@ -177,17 +186,23 @@ ENV_FILE=".env"
 if [ ! -f "$ENV_FILE" ]; then
     echo "📝 Configuring Environment..."
     if [ -z "$OPENCLAW_GATEWAY_TOKEN" ]; then
-        read -p "Enter Gateway Token (auto-generate? [y/N]): " GEN_TOKEN
-        if [[ "$GEN_TOKEN" =~ [yY](es)* ]]; then
+        if [ -t 0 ]; then
+            read -p "Enter Gateway Token (auto-generate? [y/N]): " GEN_TOKEN
+            if [[ "$GEN_TOKEN" =~ [yY](es)* ]]; then
+                OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32)
+                echo "🔑 Generated Token: $OPENCLAW_GATEWAY_TOKEN"
+            else
+                read -p "Enter Gateway Token: " OPENCLAW_GATEWAY_TOKEN
+            fi
+        else
+            echo "⚠️  Non-interactive mode. Auto-generating Gateway Token."
             OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32)
             echo "🔑 Generated Token: $OPENCLAW_GATEWAY_TOKEN"
-        else
-            read -p "Enter Gateway Token: " OPENCLAW_GATEWAY_TOKEN
         fi
     fi
 
     cat > "$ENV_FILE" <<EOF
-OPENCLAW_IMAGE=ghcr.io/openclaw/openclaw:latest
+OPENCLAW_IMAGE=ghcr.io/openclaw/openclaw@sha256:ce9347548afa0b6bdd1d262060535ba04baf0b19cde0fc211c8039492647d1b1
 OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
 OPENCLAW_GATEWAY_BIND=127.0.0.1
 OPENCLAW_GATEWAY_PORT=18789
@@ -270,6 +285,13 @@ chmod +x /usr/local/bin/openclaw
 # on modern kernels, but nftables' `meta skuid` works correctly.
 echo "🔒 Configuring firewall to enforce proxy usage..."
 
+# Enable IPv4 localnet routing so DNAT to 127.0.0.1 works for transparent proxying
+sysctl -w net.ipv4.conf.all.route_localnet=1
+sysctl -w net.ipv4.conf.eth0.route_localnet=1
+echo "net.ipv4.conf.all.route_localnet=1" >> /etc/sysctl.conf
+echo "net.ipv4.conf.eth0.route_localnet=1" >> /etc/sysctl.conf
+sysctl -p
+
 # Create/flush nftables table (idempotent)
 nft add table inet openclaw 2>/dev/null || true
 nft flush table inet openclaw
@@ -278,7 +300,16 @@ nft flush table inet openclaw
 # Reject all other outbound from uid 1000 — no direct internet access
 nft add chain inet openclaw output '{ type filter hook output priority 0 ; policy accept ; }'
 nft add rule inet openclaw output meta skuid 1000 oifname lo accept
+nft add rule inet openclaw output meta skuid 1000 udp dport 53 accept
+nft add rule inet openclaw output meta skuid 1000 tcp dport 53 accept
+nft add rule inet openclaw output meta skuid 1000 tcp dport 8082 accept
 nft add rule inet openclaw output meta skuid 1000 counter reject
+
+# Transparent proxy redirect for direct TCP connections (e.g. Baileys WebSockets, or rogue agents)
+nft add chain inet openclaw nat_output '{ type nat hook output priority dstnat ; policy accept ; }'
+# We must use dnat instead of redirect for locally generated packets across namespaces/host net to trigger routing properly
+nft add rule inet openclaw nat_output meta skuid 1000 oifname != "lo" meta nfproto ipv4 tcp dport \{ 80, 443, 5222 \} counter dnat ip to 127.0.0.1:8082
+nft add rule inet openclaw nat_output meta skuid 1000 oifname != "lo" meta nfproto ipv6 tcp dport \{ 80, 443, 5222 \} counter redirect to :8082
 
 echo "✅ Firewall rules active: uid 1000 restricted to loopback only (nftables)."
 
@@ -366,3 +397,5 @@ echo "   Proxy management:"
 echo "     systemctl status mitmproxy    # check proxy status"
 echo "     systemctl restart mitmproxy   # restart proxy"
 echo "     journalctl -u mitmproxy -f    # proxy logs"
+nft delete table ip openclaw_nat 2>/dev/null || true
+nft delete table inet openclaw_fw 2>/dev/null || true

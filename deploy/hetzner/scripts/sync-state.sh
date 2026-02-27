@@ -56,6 +56,8 @@ mkdir -p "$STATE_DIR"
 
 rsync -a --delete \
     --exclude 'secrets/' \
+    --exclude '*/.git/' \
+    --exclude '*/.git/*' \
     --exclude '.mitmproxy/' \
     --exclude 'proxy/traffic.log' \
     --exclude 'proxy/.mitmproxy/' \
@@ -63,9 +65,12 @@ rsync -a --delete \
     --exclude '.npm/' \
     --exclude '.cache/' \
     --exclude 'tmp/' \
+    --exclude 'logs/' \
     --exclude '*.sock' \
     --exclude '*.pid' \
     --exclude '*.log' \
+    --exclude '*.bkp*' \
+    --exclude '*.bak*' \
     --exclude 'CachedData/' \
     --exclude 'Cache/' \
     --exclude 'GPUCache/' \

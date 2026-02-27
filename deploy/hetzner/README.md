@@ -11,18 +11,21 @@ Deploy [OpenClaw](https://github.com/openclaw/openclaw) to a Hetzner Cloud VPS w
 
 1. **Click "Use this template"** (or fork) to create your own private repo
 2. **Create a Hetzner VPS** — Ubuntu 24.04, attach a Block Storage volume
-3. **Add GitHub Secrets** (Settings → Secrets → Actions):
+3. **Set up SSH access** to the VPS:
+   - Ensure the VPS has your SSH **public** key in `/root/.ssh/authorized_keys`
+   - You will paste the corresponding **private** key into the `HETZNER_SSH_KEY` secret below
+4. **Add GitHub Environment Secrets** (Settings → Environments → `dewald-hetzner-prod` → Add secret):
 
-   | Secret | Value |
-   |---|---|
-   | `HETZNER_VPS_IP` | Your VPS IP address |
-   | `HETZNER_SSH_KEY` | Your SSH **private** key (paste the full key) |
-   | `GCP_CREDENTIALS_JSON` | *(Optional)* GCP service account JSON for email |
-   | `DEPLOY_KEY` | *(Optional)* SSH deploy key for workspace sync |
-   | `GITHUB_REPO` | *(Optional)* SSH repo URL, e.g. `git@github.com:you/your-repo.git` |
+   | Secret | Required | Value |
+   |---|---|---|
+   | `HETZNER_VPS_IP` | ✅ | Your VPS IP address |
+   | `HETZNER_SSH_KEY` | ✅ | SSH **private** key whose corresponding **public** key is in the VM's `/root/.ssh/authorized_keys` (paste the full PEM block) |
+   | `GCP_CREDENTIALS_JSON` | Optional | GCP service account JSON for email |
+   | `DEPLOY_KEY` | Optional | SSH **private** key for workspace sync — generate on the VM (see [Workspace Sync](#workspace-sync)) |
+   | `SYNC_REPO` | Optional | SSH repo URL for workspace sync, e.g. `git@github.com:you/your-repo.git` |
 
-4. **Run the workflow**: Actions → **Deploy to Hetzner** → **Run workflow**
-5. **Complete setup**:
+5. **Run the workflow**: Actions → **Deploy to Hetzner** → **Run workflow**
+6. **Complete setup**:
    ```bash
    ssh root@<YOUR_VPS_IP>
    openclaw onboard
@@ -35,31 +38,44 @@ That's it! 🎉
 ## Architecture
 
 ```
-┌──────────────┐        ┌─────────────────────────────────────┐
-│  Your Device │──SSH──▶│  Hetzner VPS                        │
-│              │        │                                     │
-│  Browser     │◀─tunnel│  ┌──────────────┐  ┌────────────┐  │
-│  localhost:  │        │  │ Docker       │  │ mitmproxy  │  │
-│    18789     │        │  │  openclaw-gw │──│  (systemd) │  │
-│    8081      │        │  └──────────────┘  └────────────┘  │
-└──────────────┘        │       │                  │         │
-                        │  /mnt/kb (Block Storage)           │
-                        │  ┌─────────────────────────────┐   │
-                        │  │ runtime/ agents/ skills/     │   │
-                        │  │ secrets/ proxy/ workspace/   │   │
-                        │  └─────────────────────────────┘   │
-                        └─────────────────────────────────────┘
+┌──────────────┐        ┌───────────────────────────────────────────────┐
+│  Your Device │──SSH──▶│  Hetzner VPS                                  │
+│              │        │                                               │
+│  Browser     │◀─tunnel│  ┌──────────────┐  ┌────────────┐             │
+│  localhost:  │        │  │ Docker       │  │ mitmproxy  │             │
+│    18789     │        │  │  openclaw-gw │──│  (systemd) │             │
+│    8081      │        │  └──────────────┘  └────────────┘             │
+└──────────────┘        │       │                  │                    │
+                        │  /mnt/kb (Block Storage) │                    │
+                        │  ┌───────────────────────┴─────┐              │
+                        │  │ runtime/ agents/ skills/    │              │
+                        │  │ secrets/ proxy/ workspace/  │              │
+                        │  └─────────────────────────────┘              │
+                        │             │                                 │
+                        │  ┌──────────▼───────────┐                     │
+                        │  │  sync-state.timer    │───────┐             │
+                        │  │  (every 30 mins)     │       │             │
+                        │  └──────────────────────┘       ▼             │
+                        └─────────────────────────────────┼─────────────┘
+                                                          │
+                                                          ▼
+                                                  ┌───────────────┐
+                                                  │ GitHub Repo   │
+                                                  │  (auto-sync)  │
+                                                  └───────────────┘
 ```
 
 ### Security Layers
 
 | Layer | Protection |
 |---|---|
-| **Proxy (mitmproxy)** | Domain whitelist, Gmail write blocking, traffic logging |
-| **Firewall (nftables)** | Forces all container traffic through proxy — no bypass |
-| **Multi-agent** | `reader` agent has no exec/write/browser tools |
-| **Container** | Non-root (uid 1000), capability restrictions, no-new-privileges |
-| **Network** | Gateway on loopback only, SSH tunnel for access |
+| **Explicit Proxy** | `HTTP_PROXY` enforces filtering for cooperative apps on port 8080. |
+| **Transparent Proxy** | nftables DNAT loopback routing forces *all non-cooperative outbound TCP traffic* transparently through `mitmproxy` on port 8082, preventing any firewall bypass (e.g., Baileys WebSockets). |
+| **Chromium Wrapper** | Bundled `chromium-wrapper.sh` automatically configures Puppeteer instances (e.g., WhatsApp pairing) to trust the proxy CA. |
+| **Firewall (nftables)** | Outbound traffic from `uid 1000` is strictly limited to localhost loopback, DNS (udp/tcp 53), and proxy mitigation ports. Direct internet access is blocked. |
+| **Multi-agent** | `reader` agent has no exec/write/browser tools. |
+| **Container** | Non-root (uid 1000), capability restrictions, no-new-privileges. |
+| **Network** | Gateway on loopback only, SSH tunnel for access. |
 
 ---
 
@@ -95,13 +111,13 @@ make help   # Show all available targets
 
 Open a Codespace on your repo for a zero-install management environment:
 
-1. Click **Code** → **Codespaces** → **Create codespace on main**
-2. In the terminal:
+1. **Configure Codespace Secrets**: Go to repo Settings → Secrets and variables → Codespaces. Add a repository secret named `VPS_IP` with your Hetzner IP.
+2. Click **Code** → **Codespaces** → **Create codespace on main**
+3. In the terminal:
    ```bash
    cd deploy/hetzner
-   export VPS_IP=<YOUR_VPS_IP>
    
-   # Set up SSH key (one-time)
+   # Set up SSH key (one-time if you don't use Codespace secrets for it)
    echo "$SSH_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
    
    make help   # See all available commands
@@ -165,14 +181,17 @@ Automatically back up your OpenClaw runtime state to this repo every 30 minutes.
 
 ### Setup
 
-1. Generate a deploy key:
+1. **Generate the deploy key on your Hetzner VM**:
    ```bash
-   ssh-keygen -t ed25519 -C "openclaw-sync" -f deploy_key -N ""
+   ssh root@<YOUR_VPS_IP>
+   ssh-keygen -t ed25519 -C "openclaw-sync" -f /root/.ssh/deploy_key -N ""
+   cat /root/.ssh/deploy_key.pub   # Copy this for step 2
+   cat /root/.ssh/deploy_key       # Copy this for step 3
    ```
-2. Add the **public** key (`deploy_key.pub`) as a deploy key in your repo (Settings → Deploy keys, enable "Allow write access")
-3. Add the **private** key (`deploy_key`) as `DEPLOY_KEY` in GitHub Secrets
-4. Add `GITHUB_REPO` secret with your SSH repo URL (e.g. `git@github.com:you/your-repo.git`)
-5. Re-run the deploy workflow
+2. **Add the public key** to your GitHub repo: Settings → Deploy keys → Add deploy key → paste the `.pub` output → ✅ **Enable "Allow write access"**
+3. **Add the private key** as the `DEPLOY_KEY` secret in your GitHub environment (`dewald-hetzner-prod`)
+4. **Add `SYNC_REPO`** secret with your SSH repo URL (e.g. `git@github.com:you/your-repo.git`)
+5. **Re-run the deploy workflow** — `setup.sh` will configure the SSH config, clone the repo, and enable the systemd sync timer
 
 ### How it works
 

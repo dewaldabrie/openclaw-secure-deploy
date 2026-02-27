@@ -1,6 +1,6 @@
 domain,comment
-api.whatsapp.com,WhatsApp API
-web.whatsapp.com,WhatsApp Web
+whatsapp.net,WhatsApp WebSocket
+whatsapp.com,WhatsApp Web and API
 g.co,Google shortlinks
 googleapis.com,Google APIs
 accounts.google.com,Google OAuth
@@ -8,6 +8,7 @@ oauth2.googleapis.com,Google OAuth2
 www.googleapis.com,Google APIs
 gmail.googleapis.com,Gmail API
 github.com,GitHub
+raw.githubusercontent.com,GitHub Raw Data
 ghcr.io,GitHub Container Registry
 openai.com,OpenAI
 openrouter.ai,OpenRouter
