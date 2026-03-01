@@ -29,6 +29,8 @@ openclaw-state/**/*.bak*
 openclaw-state/agents/**/auth-profiles.json
 openclaw-state/agents/**/auth.json
 openclaw-state/agents/**/sessions/*.jsonl
+openclaw-state/agents/**/sessions/sessions.json
 openclaw-state/canvas/
 openclaw-state/completions/
 openclaw-state/cron/runs/*.jsonl
+openclaw-state/delivery-queue/
