@@ -371,9 +371,9 @@ fi
 echo "🚀 Launching OpenClaw..."
 docker compose -f "$COMPOSE_FILE" pull
 
-# Ensure mitmproxy is running before starting gateway
-echo "🛡️  Ensuring mitmproxy is running..."
-systemctl start mitmproxy
+# Ensure mitmproxy is restarted before starting gateway
+echo "🛡️  Restarting mitmproxy to apply config changes..."
+systemctl restart mitmproxy
 sleep 2
 if systemctl is-active --quiet mitmproxy; then
     echo "✅ mitmproxy is running."

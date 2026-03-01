@@ -1,6 +1,12 @@
 name: Deploy to Hetzner
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'deploy/hetzner/proxy/allowed_domains.csv'
+      - 'deploy/hetzner/setup.sh'
   workflow_dispatch:
     inputs:
       image_tag:
