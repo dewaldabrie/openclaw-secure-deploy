@@ -7,3 +7,22 @@
 # OS
 .DS_Store
 Thumbs.db
+
+# OpenClaw State / Auto-Sync ignores
+openclaw-state/credentials/
+openclaw-state/logs/backups/
+openclaw-state/logs/*.jsonl
+openclaw-state/media/inbound/
+openclaw-state/media_temp/
+openclaw-state/memory/*.sqlite
+openclaw-state/mitmproxy-ca-cert.pem
+openclaw-state/proxy/__pycache__/
+openclaw-state/skills-data/gog/credentials.json
+openclaw-state/skills-data/gog/keyring/
+openclaw-state/skills-data/*.enc
+openclaw-state/update-check.json
+openclaw-state/workspace*/.openclaw/workspace-state.json
+openclaw-state/workspace/media_temp/
+openclaw-state/subagents/runs.json
+openclaw-state/**/*.backup.*
+openclaw-state/**/*.bak*
