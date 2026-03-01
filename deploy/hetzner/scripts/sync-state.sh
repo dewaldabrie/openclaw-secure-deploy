@@ -12,6 +12,9 @@ set -euo pipefail
 REPO_DIR="/root/openclaw-state-repo"
 STATE_DIR="openclaw-state"
 RUNTIME_DIR="/mnt/kb/runtime"
+KB_DIR="/mnt/kb/user_knowledge_base"
+AGENTS_DIR="/mnt/kb/agents"
+SKILLS_DIR="/mnt/kb/skills"
 BRANCH="auto-sync"
 LOG_TAG="[sync-state]"
 
@@ -53,6 +56,9 @@ fi
 # ─── Rsync runtime state ──────────────────────────────────────
 log "Syncing runtime state..."
 mkdir -p "$STATE_DIR"
+mkdir -p "$STATE_DIR/workspace/knowledge_base"
+mkdir -p "$STATE_DIR/agents"
+mkdir -p "$STATE_DIR/skills"
 
 rsync -a --delete \
     --exclude 'secrets/' \
@@ -77,6 +83,11 @@ rsync -a --delete \
     --exclude 'blob_storage/' \
     --exclude 'chromium-profile/' \
     "$RUNTIME_DIR/" "$STATE_DIR/"
+
+# Sync the other mounted directories to their expected locations in the state folder
+rsync -a --delete "$KB_DIR/" "$STATE_DIR/workspace/knowledge_base/"
+rsync -a --delete "$AGENTS_DIR/" "$STATE_DIR/agents/"
+rsync -a --delete "$SKILLS_DIR/" "$STATE_DIR/skills/"
 
 # ─── Commit and push ──────────────────────────────────────────
 git add "$STATE_DIR/"
