@@ -41,7 +41,6 @@ jobs:
           GCP_CREDS: ${{ secrets.GCP_CREDENTIALS_JSON }}
 
       - name: Push deploy key for workspace sync
-        if: ${{ secrets.DEPLOY_KEY != '' }}
         run: |
           if [ -n "$DEPLOY_KEY" ]; then
             echo "$DEPLOY_KEY" | ssh -i ~/.ssh/id_deploy root@${{ secrets.HETZNER_VPS_IP }} \
