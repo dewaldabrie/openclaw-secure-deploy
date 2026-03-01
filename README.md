@@ -12,6 +12,17 @@ One-click deployment of [OpenClaw](https://github.com/openclaw/openclaw) to Hetz
 
 📖 **Full documentation**: [deploy/hetzner/README.md](deploy/hetzner/README.md)
 
+## Authenticate
+
+```bash
+# Remote (Bare Metal VM):
+sudo su - openclaw
+openclaw models auth login --provider google-antigravity
+
+# Remote (Hetzner Deploy via Make):
+cd deploy/hetzner && make pair-antigravity
+```
+
 ## Repository Structure
 
 ```
@@ -42,6 +53,10 @@ One-click deployment of [OpenClaw](https://github.com/openclaw/openclaw) to Hetz
         ├── sync-state.service    # systemd unit for sync
         └── sync-state.timer      # Runs sync every 30 minutes
 ```
+
+## Refreshing Sessions:
+-   **WhatsApp**: If the bot disconnects, use the link in our Secure Onboarding section below to re-pair.
+-   **Google/Antigravity**: If OAuth expires, run `cd deploy/hetzner && make pair-antigravity` (for Hetzner VM) or run `./deploy/local/onboard.sh` locally and sync the updated state back to the cloud.
 
 ## What's Included
 
