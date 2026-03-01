@@ -35,3 +35,9 @@ openclaw-state/completions/
 openclaw-state/cron/runs/*.jsonl
 openclaw-state/delivery-queue/
 openclaw-state/deploy/
+openclaw-state/devices/
+openclaw-state/exec-approvals.json
+openclaw-state/gogcli/credentials.json
+openclaw-state/google_credentials.json
+openclaw-state/identity/
+openclaw-state/proxy/
