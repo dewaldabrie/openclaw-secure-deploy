@@ -351,17 +351,21 @@ SSHCONF
     git config user.name "OpenClaw Sync"
     cd "$APP_DIR"
 
-    # Install sync timer
+    # Install sync and backup timers
     if [ -d "scripts" ]; then
         cp scripts/sync-state.service /etc/systemd/system/sync-state.service
         cp scripts/sync-state.timer /etc/systemd/system/sync-state.timer
+        cp scripts/backup-state.service /etc/systemd/system/backup-state.service
+        cp scripts/backup-state.timer /etc/systemd/system/backup-state.timer
         systemctl daemon-reload
         systemctl enable --now sync-state.timer
+        systemctl enable --now backup-state.timer
         echo "✅ Workspace sync enabled (every 30 minutes)."
-        echo "   View status: systemctl status sync-state.timer"
-        echo "   View logs:   journalctl -u sync-state -f"
+        echo "✅ Workspace backup enabled (daily)."
+        echo "   View status: systemctl status sync-state.timer backup-state.timer"
+        echo "   View logs:   journalctl -u sync-state -u backup-state -f"
     else
-        echo "⚠️  scripts/ directory not found. Skipping sync timer install."
+        echo "⚠️  scripts/ directory not found. Skipping timer install."
     fi
 else
     echo "ℹ️  Workspace sync not configured (set DEPLOY_KEY + GITHUB_REPO to enable)."
