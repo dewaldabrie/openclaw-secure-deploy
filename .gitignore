@@ -34,3 +34,4 @@ openclaw-state/canvas/
 openclaw-state/completions/
 openclaw-state/cron/runs/*.jsonl
 openclaw-state/delivery-queue/
+openclaw-state/deploy/
