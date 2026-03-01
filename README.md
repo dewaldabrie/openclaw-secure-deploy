@@ -5,9 +5,10 @@ One-click deployment of [OpenClaw](https://github.com/openclaw/openclaw) to Hetz
 ## Quick Start
 
 1. **Use this template** → create your own private repo
-2. **Add secrets** → `HETZNER_VPS_IP` + `HETZNER_SSH_KEY`
-3. **Run workflow** → Actions → Deploy to Hetzner → Run
-4. *(Optional)* Add `DEPLOY_KEY` + `GITHUB_REPO` for automatic workspace sync
+2. **Set up SSH access** → ensure your SSH **public** key is in the VM's `/root/.ssh/authorized_keys`
+3. **Add environment secrets** (`dewald-hetzner-prod`) → `HETZNER_VPS_IP` + `HETZNER_SSH_KEY` (the corresponding **private** key)
+4. **Run workflow** → Actions → Deploy to Hetzner → Run
+5. *(Optional)* Generate a deploy key on the VM, add `DEPLOY_KEY` + `SYNC_REPO` for automatic workspace sync
 
 📖 **Full documentation**: [deploy/hetzner/README.md](deploy/hetzner/README.md)
 
