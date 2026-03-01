@@ -26,3 +26,9 @@ openclaw-state/workspace/media_temp/
 openclaw-state/subagents/runs.json
 openclaw-state/**/*.backup.*
 openclaw-state/**/*.bak*
+openclaw-state/agents/**/auth-profiles.json
+openclaw-state/agents/**/auth.json
+openclaw-state/agents/**/sessions/*.jsonl
+openclaw-state/canvas/
+openclaw-state/completions/
+openclaw-state/cron/runs/*.jsonl
