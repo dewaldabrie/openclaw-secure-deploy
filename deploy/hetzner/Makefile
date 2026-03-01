@@ -98,6 +98,11 @@ pair-telegram: ## Pair Telegram bot
 	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
 		"docker exec -it openclaw-gateway npm exec -- openclaw channels login --channel telegram --verbose"
 
+.PHONY: pair-antigravity
+pair-antigravity: ## Refresh Antigravity auth token
+	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
+		"docker exec -it openclaw-gateway npm exec -- openclaw models auth login --provider google-antigravity"
+
 # ── Security ────────────────────────────────────────────
 
 .PHONY: rotate-token
