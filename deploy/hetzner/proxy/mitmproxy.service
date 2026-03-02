@@ -5,8 +5,9 @@ After=network.target
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/mitmweb \
-    --mode regular@127.0.0.1:8080 \
-    --mode transparent@127.0.0.1:8082 \
+    --mode regular@8080 \
+    --mode transparent@8082 \
+    --set listen_host=127.0.0.1 \
     --web-host 127.0.0.1 --web-port 8081 \
     --set block_global=false \
     --set web_password=openclaw \
