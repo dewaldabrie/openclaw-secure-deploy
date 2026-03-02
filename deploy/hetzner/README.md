@@ -148,7 +148,7 @@ make ssh               # Interactive shell
 # ── Device Pairing ──
 make pair-whatsapp     # Pair WhatsApp (scan QR)
 make pair-telegram     # Pair Telegram bot
-make pair-antigravity  # Refresh Google Antigravity auth token
+make onboard-openrouter  # Set up OpenRouter API Key
 
 # ── Security ──
 make rotate-token      # Generate new gateway token

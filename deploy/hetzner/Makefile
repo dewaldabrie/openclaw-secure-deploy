@@ -98,10 +98,10 @@ pair-telegram: ## Pair Telegram bot
 	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
 		"docker exec -it -w /app openclaw-gateway node /app/openclaw.mjs channels login --channel telegram --verbose"
 
-.PHONY: pair-antigravity
-pair-antigravity: ## Refresh Antigravity auth token
+.PHONY: onboard-openrouter
+onboard-openrouter: ## Set up OpenRouter API Key
 	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
-		"docker exec -it -w /app openclaw-gateway node /app/openclaw.mjs models auth login --provider google-antigravity"
+		"docker exec -it -w /app openclaw-gateway npm exec openclaw onboard --auth-choice apiKey --token-provider openrouter --token \"\$$OPENROUTER_API_KEY\""
 
 # ── Security ────────────────────────────────────────────
 

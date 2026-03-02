@@ -24,10 +24,13 @@
     },
     "auth": {
         "profiles": {
-            "google-antigravity:your-email@gmail.com": {
-                "provider": "google-antigravity",
-                "mode": "oauth",
-                "email": "your-email@gmail.com"
+            "opencode:default": {
+                "provider": "opencode",
+                "mode": "api_key"
+            },
+            "openrouter:default": {
+                "provider": "openrouter",
+                "mode": "api_key"
             }
         },
         "cooldowns": {
@@ -38,10 +41,14 @@
         "defaults": {
             "timeoutSeconds": 240,
             "model": {
-                "primary": "google-antigravity/gemini-3-flash"
+                "primary": "opencode/minimax-m2.5"
             },
             "models": {
-                "google-antigravity/gemini-3-flash": {}
+                "opencode/minimax-m2.5": {},
+                "opencode/big-pickle": {},
+                "opencode/gpt-5-nano": {},
+                "opencode/gemini-3-flash": {},
+                "openrouter/qwen/qwen3.5-flash-02-23": {}
             },
             "workspace": "${HOME}/.openclaw/workspace",
             "compaction": {
@@ -58,7 +65,7 @@
             {
                 "id": "main",
                 "model": {
-                    "primary": "google-antigravity/gemini-3-flash"
+                    "primary": "opencode/minimax-m2.5"
                 },
                 "sandbox": {
                     "mode": "off"
@@ -67,7 +74,7 @@
             {
                 "id": "reader",
                 "model": {
-                    "primary": "google-antigravity/gemini-3-flash"
+                    "primary": "opencode/minimax-m2.5"
                 },
                 "tools": {
                     "profile": "full",
@@ -144,9 +151,6 @@
     },
     "plugins": {
         "entries": {
-            "google-antigravity-auth": {
-                "enabled": true
-            },
             "whatsapp": {
                 "enabled": true
             }

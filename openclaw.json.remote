@@ -1,0 +1,227 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.26",
+    "lastTouchedAt": "2026-02-27T11:28:05.028Z"
+  },
+  "env": {
+    "shellEnv": {
+      "enabled": false
+    },
+    "TRELLO_API_KEY": "${TRELLO_API_KEY}",
+    "TRELLO_TOKEN": "${TRELLO_TOKEN}",
+    "OPENCODE_API_KEY": "${OPENCODE_API_KEY}",
+    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
+    "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+  },
+  "wizard": {
+    "lastRunAt": "2026-02-09T23:17:51.765Z",
+    "lastRunVersion": "2026.2.6-3",
+    "lastRunCommand": "onboard",
+    "lastRunMode": "local"
+  },
+  "auth": {
+    "profiles": {
+      "google-antigravity:dewaldabrie@gmail.com": {
+        "provider": "google-antigravity",
+        "mode": "oauth",
+        "email": "dewaldabrie@gmail.com"
+      },
+      "opencode:default": {
+        "provider": "opencode",
+        "mode": "api_key"
+      },
+      "openrouter:default": {
+        "provider": "openrouter",
+        "mode": "api_key"
+      }
+    },
+    "cooldowns": {
+      "billingBackoffHours": 5
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "google-antigravity/gemini-3-flash"
+      },
+      "models": {
+        "google-antigravity/claude-opus-4-5-thinking": {},
+        "google-antigravity/gemini-3-flash": {},
+        "opencode/claude-opus-4-5": {
+          "alias": "Opus"
+        }
+      },
+      "workspace": "${HOME}/.openclaw/workspace",
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "timeoutSeconds": 240,
+      "subagents": {
+        "maxConcurrent": 1
+      },
+      "sandbox": {
+        "mode": "off"
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "model": {
+          "primary": "google-antigravity/gemini-3-flash"
+        },
+        "sandbox": {
+          "mode": "off"
+        }
+      },
+      {
+        "id": "reader",
+        "model": {
+          "primary": "google-antigravity/gemini-3-flash"
+        },
+        "sandbox": {
+          "mode": "off"
+        },
+        "tools": {
+          "profile": "full",
+          "deny": [
+            "write",
+            "edit",
+            "apply_patch",
+            "browser",
+            "cron",
+            "gateway",
+            "group:nodes",
+            "process",
+            "exec",
+            "shell_exec",
+            "bash",
+            "zsh",
+            "sh"
+          ]
+        }
+      }
+    ]
+  },
+  "tools": {
+    "deny": [
+      "group:nodes"
+    ],
+    "web": {
+      "search": {
+        "apiKey": "${BRAVE_API_KEY}"
+      }
+    },
+    "elevated": {
+      "enabled": false
+    },
+    "fs": {
+      "workspaceOnly": true
+    }
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "session-memory": {
+          "enabled": true
+        },
+        "boot-md": {
+          "enabled": true
+        },
+        "command-logger": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "dmPolicy": "allowlist",
+      "selfChatMode": true,
+      "allowFrom": [
+        "${WHATSAPP_ALLOWED_NUMBER}",
+        "Sparky",
+        "Jeanné Abrie"
+      ],
+      "groupPolicy": "allowlist",
+      "ackReaction": {
+        "direct": true,
+        "group": "mentions"
+      },
+      "debounceMs": 0,
+      "mediaMaxMb": 50
+    }
+  },
+  "talk": {
+    "apiKey": "${OPENAI_API_KEY}"
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "controlUi": {
+      "allowedOrigins": [
+        "*",
+        "https://openclaw-dewald.tail793f30.ts.net"
+      ],
+      "allowInsecureAuth": true
+    },
+    "auth": {
+      "mode": "token",
+      "token": "${OPENCLAW_GATEWAY_TOKEN}",
+      "allowTailscale": true
+    },
+    "trustedProxies": [
+      "127.0.0.1"
+    ],
+    "tailscale": {
+      "mode": "serve",
+      "resetOnExit": false
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    },
+    "entries": {
+      "notion": {
+        "apiKey": "abcd"
+      },
+      "sag": {
+        "apiKey": "${OPENAI_API_KEY}"
+      },
+      "openai-image-gen": {
+        "apiKey": "${OPENAI_API_KEY}"
+      },
+      "openai-whisper-api": {
+        "apiKey": "${OPENAI_API_KEY}"
+      },
+      "nano-banana-pro": {
+        "apiKey": "${NANO_BANANA_PRO_API_KEY}"
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "google-antigravity-auth": {
+        "enabled": true
+      },
+      "google-antigravity": {
+        "enabled": true
+      },
+      "whatsapp": {
+        "enabled": true
+      }
+    }
+  }
+}
