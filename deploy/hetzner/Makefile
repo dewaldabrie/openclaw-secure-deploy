@@ -86,22 +86,22 @@ ssh: ## Open interactive SSH session
 .PHONY: pair-whatsapp
 pair-whatsapp: ## Pair WhatsApp (interactive — scan QR code)
 	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
-		"docker exec -it openclaw-gateway npm exec -- openclaw channels login --channel whatsapp --verbose"
+		"docker exec -it -w /app openclaw-gateway node /app/openclaw.mjs channels login --channel whatsapp --verbose"
 
 .PHONY: logout-whatsapp
 logout-whatsapp: ## Logout of WhatsApp and clear session
 	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
-		"docker exec -it openclaw-gateway npm exec -- openclaw channels logout --channel whatsapp"
+		"docker exec -it -w /app openclaw-gateway node /app/openclaw.mjs channels logout --channel whatsapp"
 
 .PHONY: pair-telegram
 pair-telegram: ## Pair Telegram bot
 	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
-		"docker exec -it openclaw-gateway npm exec -- openclaw channels login --channel telegram --verbose"
+		"docker exec -it -w /app openclaw-gateway node /app/openclaw.mjs channels login --channel telegram --verbose"
 
 .PHONY: pair-antigravity
 pair-antigravity: ## Refresh Antigravity auth token
 	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
-		"docker exec -it openclaw-gateway npm exec -- openclaw models auth login --provider google-antigravity"
+		"docker exec -it -w /app openclaw-gateway node /app/openclaw.mjs models auth login --provider google-antigravity"
 
 # ── Security ────────────────────────────────────────────
 
@@ -127,7 +127,7 @@ push-gcp-creds: ## Push GCP credentials JSON to VPS (usage: make push-gcp-creds 
 .PHONY: cli
 cli: ## Run openclaw CLI command (usage: make cli CMD="status")
 	ssh $(SSH_OPTS) -t $(SSH_USER)@$(VPS_IP) \
-		"docker exec -it openclaw-gateway npm exec -- openclaw $(CMD)"
+		"docker exec -it -w /app openclaw-gateway node /app/openclaw.mjs $(CMD)"
 
 # ── Workspace Sync ─────────────────────────────────────
 

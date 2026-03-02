@@ -274,7 +274,7 @@ fi
 echo "⌨️  Creating OpenClaw CLI wrapper..."
 cat > /usr/local/bin/openclaw <<'WRAPPER'
 #!/bin/bash
-docker exec -it openclaw-gateway npm exec -- openclaw "$@"
+docker exec -it -w /app openclaw-gateway node /app/openclaw.mjs "$@"
 WRAPPER
 chmod +x /usr/local/bin/openclaw
 
