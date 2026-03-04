@@ -67,6 +67,8 @@ rsync -a --delete \
     --exclude '.mitmproxy/' \
     --exclude 'proxy/traffic.log' \
     --exclude 'proxy/.mitmproxy/' \
+    --exclude 'gogcli/keyring/' \
+    --exclude 'gogcli/keyring/*' \
     --exclude 'node_modules/' \
     --exclude '.npm/' \
     --exclude '.cache/' \
@@ -77,6 +79,7 @@ rsync -a --delete \
     --exclude '*.log' \
     --exclude '*.bkp*' \
     --exclude '*.bak*' \
+    --exclude '*.jsonl.deleted.*' \
     --exclude 'CachedData/' \
     --exclude 'Cache/' \
     --exclude 'GPUCache/' \
@@ -86,7 +89,7 @@ rsync -a --delete \
 
 # Sync the other mounted directories to their expected locations in the state folder
 rsync -a --delete "$KB_DIR/" "$STATE_DIR/workspace/knowledge_base/"
-rsync -a --delete "$AGENTS_DIR/" "$STATE_DIR/agents/"
+rsync -a --delete --exclude '*.jsonl.deleted.*' "$AGENTS_DIR/" "$STATE_DIR/agents/"
 rsync -a --delete "$SKILLS_DIR/" "$STATE_DIR/skills/"
 
 # ─── Commit and push ──────────────────────────────────────────
